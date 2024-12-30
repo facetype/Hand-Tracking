@@ -1,6 +1,8 @@
 import cv2
 import os
 import mediapipe as mp
+import math
+
 
 mpHands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils  # For drawing landmarks
@@ -22,6 +24,7 @@ if not cap.isOpened():
 
 
 
+
 while (1):
     #capture frame by frame, cam.read() returns two values, ret and frame
     #ret is a boolean
@@ -39,11 +42,38 @@ while (1):
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(frame_rgb)
     
-    #See if any hands are detected
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
+    
+    #Getting the x,y,z coordinates of the plane, 
+    h, w, c = frame.shape
+        
+    
+      #See if any hands are detected
+    if results.multi_hand_landmarks and len(results.multi_hand_landmarks) == 2:
+        
             #Draw landmarks on the frame
-            mp_drawing.draw_landmarks(frame, hand_landmarks, mpHands.HAND_CONNECTIONS)
+        hand_landmarks_1 = results.multi_hand_landmarks[0]
+        hand_landmarks_2 = results.multi_hand_landmarks[1]
+        mp_drawing.draw_landmarks(frame, hand_landmarks_1, mpHands.HAND_CONNECTIONS)
+        mp_drawing.draw_landmarks(frame, hand_landmarks_2, mpHands.HAND_CONNECTIONS)
+        
+        
+        
+            #Calculating pixel coordinates
+        index_finger_x = int(hand_landmarks_1.landmark[8].x*w)
+        index_finger_y = int(hand_landmarks_1.landmark[8].y*h)
+        middle_finger_x = int(hand_landmarks_2.landmark[8].x*w)
+        middle_finger_y = int(hand_landmarks_2.landmark[8].y*h)
+            
+            #Calculating the Euclidean distance
+        distance = math.sqrt((middle_finger_x - index_finger_x)**2 + (middle_finger_y - index_finger_y)**2)
+            
+            #Displaying the distance
+        cv2.putText(frame, f"Distance: {distance:.2f} pixels", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.line(frame, (index_finger_x, index_finger_y), (middle_finger_x, middle_finger_y), (0,0,255),5)
+        
+        
+        
+            
         
     
 
