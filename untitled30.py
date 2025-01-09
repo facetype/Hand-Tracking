@@ -22,6 +22,15 @@ cap = cv2.VideoCapture(0)
 old_frame = 0
 new_frame = 0
 
+
+
+    #Testing if averaging out FPS calculation improves FPS
+frame_counter = 0
+start_time = time.time()
+fps = 0
+fps = str(fps)
+
+
     #Check if the camera opens correctly
 if not cap.isOpened():
     print("Error opening camera")
@@ -43,18 +52,39 @@ while (1):
         break
     
     
+    
+    
     #Convert the frame from the default BGR to RGB
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(frame_rgb)
     
     
         #FPS, calculating FPS by taking 1 divided by the time since the last frame. for example 1/0.05 = 20 fps
-    new_frame = time.time()
-    fps = 1/(new_frame - old_frame)
-    old_frame = new_frame
-    fps = int(fps)
-    fps = str(fps)
+    #new_frame = time.time()
+    #fps = 1/(new_frame - old_frame)
+    #old_frame = new_frame
+    #fps = int(fps)
+    #fps = str(fps)
+    #cv2.putText(frame, f"FPS {fps} ", (1750,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    
+        #Updating FPS every second instead to try to optimize FPS
+    frame_counter += 1
+    elapsed_time = time.time() - start_time 
+        #Updating FPS every second instead of every frame
+    if elapsed_time >= 1.0:
+        fps = frame_counter / elapsed_time
+        fps = int(fps)
+        fps = str(fps)
+        
+        
+            #Reset counter and time
+        frame_counter = 0
+        start_time = time.time()
+        
     cv2.putText(frame, f"FPS {fps} ", (1750,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    
     
     #Getting the x,y,z coordinates of the plane, 
     h, w, c = frame.shape
